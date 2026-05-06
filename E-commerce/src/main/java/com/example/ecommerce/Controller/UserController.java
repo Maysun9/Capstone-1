@@ -50,6 +50,12 @@ public class UserController {
         return ResponseEntity.status(400).body(new ApiResponse("User with this ID not found!"));
     }
 
+     @GetMapping("/history/{userId}")
+    public ResponseEntity<?> history(@PathVariable String userId) {
+        List<Product> history = userService.getPurchaseHistory(userId);
+        return ResponseEntity.ok(history);
+    }
+
 
 
 
