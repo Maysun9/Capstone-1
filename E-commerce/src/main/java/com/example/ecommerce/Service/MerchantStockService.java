@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+
 @Service
 @RequiredArgsConstructor
 public class MerchantStockService {
@@ -52,14 +53,6 @@ public class MerchantStockService {
         }
         return false;
     }
-//        for (int i = 0; i < merchantStocks.size(); i++) {
-//            if (merchantStocks.get(i).getId().equals(id)) {
-//                merchantStocks.set(i, merchantStock);
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
 
     //delete
     public boolean deletMerchantStocks(String id) {
@@ -83,7 +76,6 @@ public class MerchantStockService {
         }
         return false;
     }
-
 
     public MerchantStock getStock(String productId, String merchantId) {
         for (MerchantStock m : merchantStocks) {
@@ -118,10 +110,11 @@ public class MerchantStockService {
         }
         stock.setStock(stock.getStock() - 1);
         user.setBalance(user.getBalance() - product.getPrice());
+        user.getBuyProduct().add(productId); //عشان الrating يكون فيه سجل له
         return 1;
     }
 
-    //extra point 3. get product by merchant
+    //get product by merchant
     public ArrayList<Product> productByMerchant(String merchantId) {
         ArrayList<Product> p = new ArrayList<>();
         for (MerchantStock m : merchantStocks) {
@@ -135,7 +128,7 @@ public class MerchantStockService {
         return p;
     }
 
-    //extra endpoint 6. get stock  by product id
+    // get stock  by product id
     public int getStockByProductId(String productId) {
         for (MerchantStock m : merchantStocks) {
             if (m.getProductId().equals(productId)) {
@@ -144,8 +137,33 @@ public class MerchantStockService {
         }
         return -1;
     }
+        //check balance for user 
+    public boolean canBuy(String userId, String productId) {
+        User user = userService.userExist(userId);
+        Product product = productService.productExist(productId);
+        if (user == null || product == null) {
+            return false;
+        }
+        return user.getBalance() >= product.getPrice();
+    }
+    
+      // alert stock
+    public ArrayList<Product> lowStockProducts() {
+        ArrayList<Product> alert = new ArrayList<>();
+        for (MerchantStock m : merchantStocks) {
+            if (m.getStock() < 5) {
+                Product p = productService.productExist(m.getProductId());
+                if (p != null && !alert.contains(p)) {
+                    alert.add(p);
+                }
+            }
+        }
 
-    //extra endpoint 7 . rating
+        return alert;
+    }
+
+    
+    // endpoint rating
     public int rating(String userId, String merchantId, String productId, int rating){
         if(rating<0 || rating>5){
             return -1;
@@ -162,18 +180,21 @@ public class MerchantStockService {
         if (product == null) {
             return -4;
         }
+        if (!user.getBuyProduct().contains(productId)) {
+            return -5;  //هنا ربطتها بالarraylist in user وايضا في point 12
+        }
         product.setRating(rating); //Rating
 
         return 1;
     }
 
-    //11. available product in stock
-    public ArrayList<Product> availableProducts(int limit) {
+    // endpoint available product in stock
+    public ArrayList<Product> availableProducts(String categoryId, int limit) {
         ArrayList<Product> av = new ArrayList<>();
         for (MerchantStock m : merchantStocks) {
             if (m.getStock() > 0) {
                 Product product = productService.productExist(m.getProductId());
-                if (product != null && !av.contains(product)) {
+                if (product != null && product.getCategoryID().equals(categoryId) && !av.contains(product)) { //ربطتها مع الكاتقوري
                     av.add(product);
                 }
                 if (av.size() == limit) {
@@ -184,7 +205,20 @@ public class MerchantStockService {
         return av;
 
     }
+
+    //endpoint most sold in system
+public Product mostSoldProduct() {
+    MerchantStock max = null;
+    for (MerchantStock m : merchantStocks) {
+        if (max == null || m.getStock() < max.getStock()) {
+            max = m;
         }
+    }
+    if (max != null) {
+        return productService.productExist(max.getProductId());
+    }
+    return null;
+}
 
 
-
+        }
