@@ -30,4 +30,7 @@ public class User {
     @NotNull(message = "Error: balance can not be empty")
     @Positive(message = "Error: balance must be positive")
     private int balance;
+
+ ArrayList<String> buyProduct = new ArrayList<>();
+
 }
