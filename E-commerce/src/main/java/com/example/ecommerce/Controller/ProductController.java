@@ -124,4 +124,12 @@ public class ProductController {
         }
         return ResponseEntity.ok(product);
     }
+     @GetMapping("/recommend/{productId}")
+    public ResponseEntity<?> recommend(@PathVariable String productId) {
+        List<Product> recommend = productService.recommendByCategory(productId);
+        if (recommend.isEmpty()) {
+            return ResponseEntity.status(404).body(new ApiResponse("No recommendations found"));
+        }
+        return ResponseEntity.ok(recommend);
+    }
 }
