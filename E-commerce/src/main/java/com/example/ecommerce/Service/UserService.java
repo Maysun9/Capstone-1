@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
+    private final ProductService productService;
     ArrayList<User> users = new ArrayList<>();
 
     //get
@@ -53,5 +55,19 @@ public class UserService {
         }
         return null;
     }
-
+//history
+public List<Product> getPurchaseHistory(String userId) {
+    User user = userExist(userId);
+    if (user == null) {
+        return new ArrayList<>();
+    }
+    List<Product> history = new ArrayList<>();
+    for (String productId : user.getBuyProduct()) {
+        Product p = productService.productExist(productId);
+        if (p != null) {
+            history.add(p);
+        }
+    }
+    return history;
+}
 }
