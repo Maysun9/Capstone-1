@@ -162,5 +162,19 @@ public class ProductService {
         }
         return max;
     }
+    //recommendation
+    public List<Product> recommendByCategory(String productId) {
+        Product target = productExist(productId);
+        if (target == null) {
+            return new ArrayList<>();
+        }
+        List<Product> recommend = new ArrayList<>();
+        for (Product p : products) {
+            if (p.getCategoryID().equals(target.getCategoryID()) && !p.getId().equals(productId)) {
+                recommend.add(p);
+            }
+        }
+        return recommend;
+    }
 
 }
