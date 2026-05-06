@@ -114,6 +114,21 @@ public class MerchantStockController {
         }
         return ResponseEntity.ok(stock);
     }
+    
+    @GetMapping("/can-buy/{userId}/{productId}")
+    public ResponseEntity<?> canBuy(@PathVariable String userId, @PathVariable String productId) {
+        boolean can = merchantStockService.canBuy(userId, productId);
+        if (can) {
+            return ResponseEntity.status(200).body(new ApiResponse("YES, user can buy this product"));
+        }
+        return ResponseEntity.status(200).body(new ApiResponse("NO, user cannot buy this product"));
+    }
+
+    @GetMapping("/low-stock")
+    public ResponseEntity<?> lowStock() {
+        return ResponseEntity.ok(merchantStockService.lowStockProducts());
+    }
+
     @PostMapping("/rating/{userId}/{merchantId}/{productId}/{rating}")
     public ResponseEntity<?> rating(@PathVariable String userId, @PathVariable String merchantId, @PathVariable String productId, @PathVariable int rating) {
         int result = merchantStockService.rating(userId, merchantId, productId, rating);
@@ -131,12 +146,23 @@ public class MerchantStockController {
 
         if (result == -4)
             return ResponseEntity.badRequest().body(new ApiResponse("Product not found"));
-
+        if (result == -5)
+         return ResponseEntity.badRequest().body(new ApiResponse("You must buy the product before rating it"));
         return ResponseEntity.status(404).body(new ApiResponse("Error"));
     }
 
-    @GetMapping("/available/{limit}")
-    public ResponseEntity<?> availableProducts(@PathVariable int limit) {
-        return ResponseEntity.ok(merchantStockService.availableProducts(limit));
+    @GetMapping("/available/{categoryId}/{limit}")
+    public ResponseEntity<?> availableProducts(@PathVariable String categoryId, @PathVariable int limit) {
+        return ResponseEntity.ok(merchantStockService.availableProducts(categoryId,limit));
     }
+
+    @GetMapping("/most-sold")
+    public ResponseEntity<?> mostSoldProduct() {
+        Product p = merchantStockService.mostSoldProduct();
+        if (p == null) {
+            return ResponseEntity.status(404).body(new ApiResponse("No data"));
+        }
+        return ResponseEntity.ok(p);
+    }
+
 }
